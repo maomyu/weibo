@@ -1,0 +1,11 @@
+app:
+  redis:
+    enabled: true
+    conn: 127.0.0.1:6379
+    dbNum: 8
+    password: redis6379recycle072829
+    timeout: 3000
+    sentinel:
+      enabled: false
+      master: redis-master
+      nodes: 112.124.31.82:6379,112.124.31.82:6378,112.124.31.82:6377

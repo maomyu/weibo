@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:c="http://www.w3.org/1999/XSL/Transform">
+<head>
+    <meta charset="UTF-8">
+    <title>{{.title}}</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/login.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/follow.css">
+    <script src="../static/js/jquery.min.js"></script>
+    <script>
+        var user = {{.user}};
+        var result = {{.result}};
+        $(function(){
+            /*公共部分
+            * 导航栏
+            */
+            $(".headerpage").load("../navbar.html");
+        })
+    </script>
+
+</head>
+
+<body style="padding: 80px">
+    <div class="headerpage"></div>
+    <div class="container" style="width: auto; background-color: #fff;">
+        <div id="resultcount" style="display: none"><hr><p style="font-size: 40px; color: black; text-align: center">找到{{.countusers}}个用户</p></div>
+    </div>
+    {{if .queryFollowUsername}}
+    <div class="container" style="width: auto; background-color: #fff;">
+		<div id="followQueryResult"><hr><p style="font-size: 40px; color: black; text-align: center">{{.queryFollowUsername}}关注的人</p></div>
+    </div>
+    {{end}}
+    {{if .queryFollowedUsername}}
+    <div class="container" style="width: auto; background-color: #fff;">
+		<div id="followQueryResult"><hr><p style="font-size: 40px; color: black; text-align: center">关注{{.queryFollowedUsername}}的人</p></div>
+    </div>
+    {{end}}
+    <div class="container">
+        <div class="row" align="center" style="background-color: #fff">
+            {{range $postkey,$postvalue:=.result}}
+                <div class="col-md-4" style="height: 150px; background-color: #fff;">
+                    <div class="leftbox">
+                        <!-- 头像 -->
+                        <div style="cursor: pointer; height: 50px; width: 50px; float: left;">
+                            <img onclick="javascript:ClickUser({{$postvalue.Username}});"
+                                 src="../static/pic/faceimages/{{$postvalue.Userid}}.jpg" height="100px" width="100px"
+                                 class="img-circle" align="center">
+                        </div>
+                    </div>
+                    <div class="rightbox"  align="center">
+                        <table>
+                            <tr>
+                                <td>
+                                    <!-- 相互关注3 -->
+                                    <!-- 我关注他2 -->
+                                    <!-- 他关注我1 -->
+                                    <!-- 陌生0 -->
+                                    <!-- 本人 -->
+                                    <button id="follow{{$postvalue.Userid}}" class="btn btn-warning" style="cursor: pointer;"
+                                            onclick="follow({{$postvalue.Userid}},{{$postkey}})">
+                                        <span id="relation{{$postvalue.Userid}}">Loading...</span>
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- 昵称 -->
+                            <tr>
+                                <td><span style="font-size: 17px" onclick="javascript:ClickUser({{$postvalue.Username}});">
+                                    {{$postvalue.Username}}
+                                </span></td>
+                            </tr>
+                            <tr>
+                                <td><span style="font-size: 15px"> <!-- 性别 -->
+                                    <span id="sexmale{{$postvalue.Userid}}" style="font-size: 15px;display: none">♀ </span>
+                                    <span id="sexfemale{{$postvalue.Userid}}" style="font-size: 15px;display: none">♂ </span>
+                                    <span style="font-size: 15px"> {{$postvalue.Age}} 岁 </span>
+                                </span></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            {{end}}
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var result = {{.result}};
+        var resultlen;
+        if (result==null) {
+            resultlen = 0;
+        } else {
+            resultlen = result.length;
+        }
+        var nowid = user['Userid'];
+        console.log("nowid: "+nowid);
+
+        var resultcount=document.getElementById("resultcount");
+        if (window.location.href.indexOf("showtype=search")!=-1) {
+            resultcount.style.display = "block";
+        }
+
+        for (var i=0;i<resultlen;i++) {
+            var userid = result[i]['Userid'];
+            console.log(result[i]);
+            // 性别判断
+            var male=document.getElementById("sexmale"+userid);
+            var female=document.getElementById("sexfemale"+userid);
+            if (result[i]['Sex']==0) {
+                male.style.display = "block";
+            } else {
+                female.style.display = "block";
+            }
+            // 关系判断
+            if (nowid==userid) {
+                document.getElementById("relation"+userid).innerHTML = "我"
+            } else if (result[i]['Relation']==3) {
+                document.getElementById("relation"+userid).innerHTML = "互相关注"
+            } else if (result[i]['Relation']==2) {
+                document.getElementById("relation"+userid).innerHTML = "已关注"
+            } else if (result[i]['Relation']==1) {
+                document.getElementById("relation"+userid).innerHTML = "被关注"
+            } else  {
+                document.getElementById("relation"+userid).innerHTML = "未关注"
+            }
+        }
+
+        //新开用户主页
+        function ClickUser(username) {
+            var url = "/my/" + username;
+            window.open(url);
+        }
+
+        //已关注——关注
+        function follow(followid,i) {
+            if (nowid==followid) {
+                return;
+            } else if (result[i]['Relation']>=2) {
+                $.ajax({
+                    url:"/unfollow",
+                    type:"post",
+                    data:{
+                        userid: nowid,
+                        followid: followid,
+                    },
+                    dataType:"json",
+                    success:function(data){
+                        console.log(data.flag);
+                        if(true===data.flag){
+                            console.log(i);
+                            console.log(result[i]);
+                            alert("取消关注成功");
+                            result[i]["Relation"] = result[i]["Relation"] - 2;
+                            console.log(result[i]["Relation"]);
+                            if (result[i]["Relation"]==1) {
+                                document.getElementById("relation"+followid).innerHTML = "被关注"
+                            } else if (result[i]["Relation"]==0) {
+                                document.getElementById("relation"+followid).innerHTML = "未关注"
+                            }
+                        }else{
+                            alert("network error");
+                        }
+                    }
+                })
+            } else {
+                $.ajax({
+                    url:"/follow",
+                    type:"post",
+                    data:{
+                        userid: nowid,
+                        followid: followid,
+                    },
+                    dataType:"json",
+                    success:function(data){
+                        console.log(data.flag);
+                        if(true===data.flag){
+                            console.log(i);
+                            console.log(result[i]);
+                            alert("关注成功");
+                            result[i]["Relation"] = result[i]["Relation"] + 2;
+                            if (result[i]["Relation"]==3) {
+                                document.getElementById("relation"+followid).innerHTML = "互相关注"
+                            } else if (result[i]["Relation"]==2) {
+                                document.getElementById("relation"+followid).innerHTML = "已关注"
+                            }
+                        }else{
+                            alert("network error");
+                        }
+                    }
+                })
+            }
+        }
+
+    </script>
+
+</body>
+</html>

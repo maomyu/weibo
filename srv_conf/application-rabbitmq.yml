@@ -1,0 +1,6 @@
+app:
+  rabbitmq:
+    url: 127.0.0.1:5672
+    user: admin
+    password: rabbitmq199898199817
+    

@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:c="http://www.w3.org/1999/XSL/Transform">
+<head>
+    <meta charset="UTF-8">
+    <title>微博</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.css">
+    <script src="../static/js/jquery.min.js"></script>
+    <script>
+        var user = {{.user}};
+        var userid = user.Userid;
+        var weibo = {{.weibo}};
+        var weibocount = {{.weibocount}};
+        var temp = new Array();
+        $.ajax({
+            url:"/countfollow?userid={{.user.Userid}}",
+            type:"get",
+            dataType:"json",
+            success:function(result){
+                document.getElementById("CountFollow").innerHTML = result.CountFollow;
+                document.getElementById("CountFollowed").innerHTML = result.CountFollowed;
+            }
+        });
+        function postComment(weiboid) {
+            var commentText=document.getElementById("postCommentText"+weiboid).value;
+            console.log(weiboid);
+            console.log(commentText);
+            if (commentText=="") {
+                alert("评论不能为空");
+                return;
+            }
+            $.ajax({
+                url:"/commentpost",
+                type:"post",
+                data:{
+                    userid: userid,
+                    weiboid: weiboid,
+                    username: user.Username,
+                    text: commentText
+                },
+                dataType:"json",
+                success:function(result){
+                    console.log(result.flag);
+                    if(true===result.flag){
+                        console.log("success");
+                        alert("评论发布成功");
+                        window.location.reload();
+                    }else{
+                        alert("评论不可为空");
+                    }
+                }
+            })
+        }
+    </script>
+    <script>
+        $(function(){
+            /*公共部分
+            * 导航栏
+            */
+            $(".headerpage").load("../navbar.html?userid="+user.Userid);
+        })
+    </script>
+
+</head>
+<body>
+<div class="headerpage"></div>
+
+<!-- 正文 -->
+<div class="container">
+    <!-- 右侧个人简单信息 -->
+    <div style="width: 20%; float: right; background-color: #fff;height: 220px;">
+        <!-- 头像 -->
+        <a href="/my/{{.user.Username}}"><img src="../static/pic/faceimages/{{.user.Userid}}.jpg" style="margin-top: 10px;text-align:center"
+             height="90px " width="90px" class="img-circle " alt="">
+        <!-- 昵称 -->
+            <br> <span class="username" style="font-size: 20px;">&nbsp{{.username}}</span></a>
+        <br> <br>
+        <table  style="table-layout: fixed;text-align:center">
+            <tr>
+                <td><a href="/my/{{.user.Username}}"><span id="numberOfWeibo"></span> 微博&nbsp;</a></td>
+                <td><a href="/searchUser?showtype=follow&userid={{.user.Userid}}"><span id="CountFollow">Loading...</span> 关注&nbsp;</a></td>
+                <td><a href="/searchUser?showtype=followed&userid={{.user.Userid}}"><span id="CountFollowed">Loading...</span> 粉丝</a></td>
+            </tr>
+        </table>
+        <br>
+        <span id="sexmale" style="font-size: 15px;display: none">♀ </span>
+        <span id="sexfemale" style="font-size: 15px;display: none">♂ </span>
+        <span style="font-size: 15px"> {{.user.Age}} 岁 </span>
+    </div>
+
+    <div class="container" style="width: auto; background-color: #fff;">
+        <br><br>
+        <p style="font-size: 40px; color: black; text-align: left">{{.user.Username}}的主页</p>
+        <br>
+    </div>
+
+    <div style="width: 70%; float: left;">
+        <!-- 微博内容 -->
+        {{range $postkey,$postvalue:=.weibo}}
+        <div id="weiboItem">
+            <!-- 头部 -->
+            <div class="container"
+                 style="width: auto; background-color: white;">
+                <!-- 头像 -->
+                <a style="cursor: pointer; height: 50px; width: 50px; margin: 10px; float: left;"
+                   href="/my/{{$postvalue.Username}}">
+                    <img src="../static/pic/faceimages/{{$postvalue.Userid}}.jpg" width="50px" height="50px" class="img-circle">
+                </a>
+                <!-- 昵称+日期 -->
+                <div style="text-align: left; margin: 10px; margin-left: 20px; float: left;">
+                    <a style="color: #333; font-size: 20px"
+                       href="/my/{{$postvalue.Username}}">{{$postvalue.Username}}</a><br>
+                    <span style="color: #333; font-size: 15px">{{$postvalue.CreatedAt}}</span>
+                </div>
+            </div>
+            <!-- 内容 -->
+            <div class="container"
+                 style="width: auto; background-color: #fff;">
+                <!-- 文字 -->
+                <div style="text-align: left; margin-left: 85px">
+                    <p style="color: #333; font-size: 17px">{{$postvalue.Text}}</p>
+                </div>
+            </div>
+
+            <div class="container" style="width: auto; background-color: #fff;">
+                <br>
+                <div class="btn-group" style="width: 100%">
+                    <!---------------------------------------------------- 评论 --------------------------------------------------------->
+                    <button type="button" style="width: 33%" class="btn btn-warning"
+                            id="commentButton{{$postvalue.Weiboid}}"><span style="color: #fff;" id="commentspan${weibo.weiboId }"
+                                                                           class="glyphicon glyphicon-comment" aria-hidden="true"></span>
+                        <span style="color: #fff;" id="commentCount${weibo.weiboId}">{{$postvalue.CommentCount}}</span>
+                    </button>
+                    <script type="text/javascript">
+                        temp[{{$postvalue.Weiboid}}]=0;
+                        var button=document.getElementById("commentButton{{$postvalue.Weiboid}}");
+                        button.onclick=function(){
+                            if(temp[{{$postvalue.Weiboid}}]==0){
+                                document.getElementById("allAboutComment{{$postvalue.Weiboid}}").style.display ="block";
+                                temp[{{$postvalue.Weiboid}}]=1;
+                            }else{
+                                document.getElementById("allAboutComment{{$postvalue.Weiboid}}").style.display ="none";
+                                temp[{{$postvalue.Weiboid}}]=0;
+                            }
+                        }
+                    </script>
+                    <!---------------------------------------------------- 点赞 ------------------------------------------------------
+                    <button id="like${weibo.weiboId}" type="button"
+                            style="width: 33%" class="btn btn-danger">
+                            <span style="color: #fff;" id="likespan${weibo.weiboId }"
+                                  class="glyphicon glyphicon-heart-empty" aria-hidden="true">
+                            </span>
+                        <span style="color: #fff;" id="likeCount${weibo.weiboId}">{{$postvalue.Like}}</span>
+                    </button> --->
+                </div>
+            </div>
+            <!-- 评论区 -->
+            <div id="allAboutComment{{$postvalue.Weiboid}}" class="container" style="display: none;width: auto">
+                <!-- 写评论 -->
+                <div>
+					        <textarea class="form-control" rows="4"  maxlength=100
+                                      style="border: 1px; resize: none; width: 90%; background-color: #eef;float: left" id="postCommentText{{$postvalue.Weiboid}}"
+                                      onkeydown='countChar("postCommentText{{$postvalue.Weiboid}}","counter{{$postvalue.Weiboid}}");'
+                                      onkeyup='countChar("postCommentText{{$postvalue.Weiboid}}","counter{{$postvalue.Weiboid}}");'
+                                      name="weiboCustom.content"></textarea>
+                    <div id="postCommentButton{{$postvalue.Weiboid}}" style="text-align: center;float: right;width: 10%">
+                        <button id="postComment" onclick="postComment({{$postvalue.Weiboid}})"
+                                class="form-control btn btn-success">发表评论</button>
+                    </div>
+                    <div style="text-align: center;float: right;width: 10%">
+                                <span style="font-size:15px;">
+                                    已经输入<span id="counter{{$postvalue.Weiboid}}">0</span>/100字<br/>
+                    </div>
+                </div>
+                <!-- 每条评论的具体内容 -->
+                {{range $commentkey,$commentvalue:= $postvalue.Comment}}
+                <div class="comment; background-color: white;">
+                    <!-- 头部 -->
+                    <div class="container"
+                         style="width: 90%; background-color: white;">
+                        <!-- 头像 -->
+                        <div style="cursor: pointer; height: 40px; width: 40px; margin: 10px; float: left;">
+                            <img src="../static/pic/faceimages/{{$commentvalue.Userid}}.jpg" width="50px" height="50px" class="img-circle">
+                        </div>
+                        <!-- 昵称+日期 -->
+                        <div style="text-align: left; margin: 10px; margin-left: 20px; float: left;">
+                            <a style="color: #333; font-size: 17px">{{$commentvalue.Username}}</a><br>
+                            <span style="color: #333; font-size: 13px">{{$commentvalue.CreatedAt}}</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 内容 -->
+                <div class="container"
+                     style="width: 90%; background-color: #fff;">
+                    <!-- 文字 -->
+                    <div style="text-align: left; margin-left: 85px">
+                        <p style="color: #333; font-size: 15px">{{$commentvalue.CommentText}}</p>
+                    </div>
+                    <hr>
+                </div>
+                {{end}}
+
+
+            </div>
+        </div>
+        <br>
+        {{end}}
+    </div>
+</div>
+
+<script>
+    document.getElementById("numberOfWeibo").innerHTML = weibocount;
+    console.log(user);
+    var male=document.getElementById("sexmale"),female=document.getElementById("sexfemale");
+    if (user.Sex==0) {
+        male.style.display = "block";
+    } else {
+        female.style.display = "block";
+    }
+
+    function countChar(textareaName,spanName)
+    {document.getElementById(spanName).innerHTML = document.getElementById(textareaName).value.length;}
+</script>
+</body>
+</html>

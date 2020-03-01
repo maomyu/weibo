@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.title}}</title>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="./static/css/login.css">
+    <script src="../static/js/jquery.min.js"></script>
+
+    <script>
+        function check_age() {
+            document.getElementById("error_age").style.display = "block";
+            var input_age = document.getElementById("age");
+            var error_age = document.getElementById("error_age");
+
+            if(input_age.value<0){
+                error_age.innerHTML="年龄为负数";
+            } else if (input_age.value>150){
+                error_age.innerHTML="年龄太大";
+            } else {
+                error_age.innerHTML= "";
+            }
+        }
+
+        function getFormInfo() {
+            // 	$("#form-signin").on("click",".btn",function(e){
+            var username=document.getElementById("username").value;
+            var password=document.getElementById("password1").value;
+            var password2=document.getElementById("password2").value;
+            var sex=document.getElementById("sex").value;
+            var age=document.getElementById("age").value;
+            if (password!=password2) {
+                alert("两次的密码不一致");
+            } else {
+                $.ajax({
+                    url: "/registerpost",
+                    type: "post",
+                    data: {
+                        username: username,
+                        password: password,
+                        sex: sex,
+                        age: age
+                    },
+                    dataType: "json",
+                    success: function (result) {
+                        console.log(result.flag);
+                        if (true === result.flag) {
+                            console.log("success");
+                            alert("注册成功");
+                            window.location.href = "/login";
+                        } else {
+                            alert(result.errormessage);
+                            window.location.href = "/register";
+                        }
+                    }
+                })
+            }
+        }
+    </script>
+
+</head>
+
+<body>
+<div class="site-wrapper">
+    <div class="site-wrapper-inner">
+        <div class="cover-container">
+            <div class="inner cover">
+                <h1 class="cover-heading">发现新鲜事！</h1>
+                <div class="form-signin">
+                    <div class="from-group">
+                        <input type="text" id="username"
+                               name="username" class="form-control" placeholder="请输入用户名" required="required" autofocus="autofocus">
+                    </div>
+                    <div class="from-group">
+                        <input type="password" id="password1" class="form-control" placeholder="请输入密码" required="required">
+                    </div>
+                    <div class="from-group">
+                        <input type="password" id="password2" class="form-control" placeholder="再次输入密码" required="required">
+                    </div>
+                    <div class="from-group">
+                        <select id="sex" class="form-control">
+                            <option value="1">男</option>
+                            <option value="0">女</option>
+                        </select>
+                    </div>
+                    <span id="error_age" style="color: #ff5b5b; font-size: 17px; display: none;">${error_age}</span>
+                    <div class="from-group" >
+                        <input oninput="javascript:check_age();" type="number" id="age" class="form-control" 
+                               placeholder="年龄" required="required"  autofocus="autofocus">
+                    </div>
+                    <br>
+                    <button class="btn btn-lg btn-primary btn-block" onclick="getFormInfo()">注册</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+</script>
+
+</body>
+
+</html>

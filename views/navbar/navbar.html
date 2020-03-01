@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>title</title>
+    <link rel="stylesheet" type="text/css" href="../static/css/bootstrap.css">
+    <style>
+        body{
+            padding-top: 50px;
+        }
+        .main{
+            padding: 40px 15px;
+            text-align: center;
+        }
+    </style>
+    <script>
+        $.getScript("../static/js/search.js",function(){
+            // alert("载入成功！");
+        });
+    </script>
+</head>
+<body>
+
+
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <a href="#" class="navbar-brand">Weibo</a>
+            </div>
+            <div id="navbar-left" class="collapse navbar-collapse navbar-left">
+                <ul class="nav navbar-nav">
+					  <li ><a href="/index">首页</a></li>
+                    <li ><a href="/my">我的主页</a></li>
+                    <li><input required="required" id="searchText" type="text"
+                           style="margin-top: 8px; " class="form-control" placeholder="搜索用户"></li>
+                    <li><button style="margin-top: 8px; margin-left: 10px;"
+                            onclick="searchWeibo()"
+                            class="form-control btn btn-info">查询
+                    </button></li>
+                </ul>
+            </div>
+            <div id="navbar-right" class="collapse navbar-collapse navbar-right">
+                <ul class="nav navbar-nav">
+                    <a href="/logout">
+                    <li><button style="margin-top: 8px; margin-left: 10px;"
+                                class="form-control btn btn-info">登出</button></li></a>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+</body>
+</html>
